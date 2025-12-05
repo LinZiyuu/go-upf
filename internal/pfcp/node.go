@@ -629,13 +629,13 @@ func (n *LocalNode) Sess(lSeid uint64) (*Sess, error) {
 		return nil, errors.New("Sess: invalid lSeid:0")
 	}
 
-	// Capacity as int; compare as uint64 to match lSeid type.
-	sessCap := len(n.sess)
-	if lSeid > uint64(sessCap) {
+	// Length as int; compare as uint64 to match lSeid type.
+	sessLen := len(n.sess)
+	if lSeid > uint64(sessLen) {
 		return nil, errors.Errorf("Sess: sess not found (lSeid:%#x)", lSeid)
 	}
 
-	// Safe: 1 <= lSeid <= sessCap guarantees the conversion and index are valid.
+	// Safe: 1 <= lSeid <= sessLen guarantees the conversion and index are valid.
 	idx := int(lSeid) - 1
 	sess := n.sess[idx]
 	if sess == nil {
@@ -689,13 +689,12 @@ func (n *LocalNode) DeleteSess(lSeid uint64) ([]report.USAReport, error) {
 
 	// Safe: 1 <= lSeid <= sessCap ensures valid conversion and index.
 	idx := int(lSeid) - 1
-	s := n.sess[idx]
-	if s == nil {
+	if n.sess[idx] == nil {
 		return nil, errors.Errorf("DeleteSess: sess not found (lSeid:%#x)", lSeid)
 	}
 
-	s.log.Infoln("sess deleted")
-	usars := s.Close()
+	n.sess[idx].log.Infoln("sess deleted")
+	usars := n.sess[idx].Close()
 	n.sess[idx] = nil
 	n.free = append(n.free, lSeid)
 
